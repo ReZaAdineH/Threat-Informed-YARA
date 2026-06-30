@@ -1,0 +1,14 @@
+## Cloud, containers, and orchestration telemetry
+-w /usr/bin/docker -p x -k mc_container_activity
+-w /usr/bin/containerd -p x -k mc_container_activity
+-w /usr/bin/crictl -p x -k mc_container_activity
+-w /usr/local/bin/kubectl -p x -k mc_kubernetes_activity
+-w /usr/bin/kubectl -p x -k mc_kubernetes_activity
+-w /etc/kubernetes/ -p wa -k mc_kubernetes_config
+-w /var/lib/kubelet/ -p wa -k mc_kubernetes_config
+-w /var/run/docker.sock -p wa -k mc_docker_socket
+
+-w /root/.aws/ -p wa -k mc_cloud_credentials
+-w /home/ -p wa -k mc_home_changes
+-w /etc/cloud/ -p wa -k mc_cloud_init
+-w /var/lib/cloud/ -p wa -k mc_cloud_init

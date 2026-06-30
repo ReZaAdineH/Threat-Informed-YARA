@@ -1,0 +1,20 @@
+## Identity and access control
+-w /etc/passwd -p wa -k mc_identity
+-w /etc/shadow -p wa -k mc_identity
+-w /etc/group -p wa -k mc_identity
+-w /etc/gshadow -p wa -k mc_identity
+-w /etc/security/opasswd -p wa -k mc_identity
+-w /etc/login.defs -p wa -k mc_identity
+-w /etc/pam.d/ -p wa -k mc_identity_pam
+-w /etc/sudoers -p wa -k mc_sudoers
+-w /etc/sudoers.d/ -p wa -k mc_sudoers
+
+-a always,exit -F arch=b64 -S setuid,setgid,setreuid,setregid,setresuid,setresgid -k mc_identity_change
+-a always,exit -F arch=b32 -S setuid,setgid,setreuid,setregid,setresuid,setresgid -k mc_identity_change
+-w /usr/bin/passwd -p x -k mc_identity_tools
+-w /usr/sbin/useradd -p x -k mc_identity_tools
+-w /usr/sbin/userdel -p x -k mc_identity_tools
+-w /usr/sbin/usermod -p x -k mc_identity_tools
+-w /usr/sbin/groupadd -p x -k mc_identity_tools
+-w /usr/sbin/groupdel -p x -k mc_identity_tools
+-w /usr/sbin/groupmod -p x -k mc_identity_tools

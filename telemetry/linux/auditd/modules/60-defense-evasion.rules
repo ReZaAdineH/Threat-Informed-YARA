@@ -1,0 +1,23 @@
+## Defense evasion, tampering, kernel module loading, ptrace
+-w /var/log/audit/ -p wa -k mc_audit_log_tamper
+-w /var/log/auth.log -p wa -k mc_auth_log_tamper
+-w /var/log/secure -p wa -k mc_auth_log_tamper
+-w /var/log/syslog -p wa -k mc_system_log_tamper
+-w /var/log/messages -p wa -k mc_system_log_tamper
+-w /etc/ld.so.preload -p wa -k mc_ld_preload
+-w /etc/ld.so.conf -p wa -k mc_ld_config
+-w /etc/ld.so.conf.d/ -p wa -k mc_ld_config
+
+-w /sbin/insmod -p x -k mc_kernel_module
+-w /sbin/rmmod -p x -k mc_kernel_module
+-w /sbin/modprobe -p x -k mc_kernel_module
+-w /usr/sbin/insmod -p x -k mc_kernel_module
+-w /usr/sbin/rmmod -p x -k mc_kernel_module
+-w /usr/sbin/modprobe -p x -k mc_kernel_module
+-a always,exit -F arch=b64 -S init_module,finit_module,delete_module -k mc_kernel_module
+-a always,exit -F arch=b32 -S init_module,delete_module -k mc_kernel_module
+
+-a always,exit -F arch=b64 -S ptrace -k mc_ptrace
+-a always,exit -F arch=b32 -S ptrace -k mc_ptrace
+-a always,exit -F arch=b64 -S clock_settime,settimeofday,adjtimex -k mc_time_tamper
+-a always,exit -F arch=b32 -S clock_settime,settimeofday,adjtimex -k mc_time_tamper

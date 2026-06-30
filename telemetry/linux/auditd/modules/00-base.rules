@@ -1,0 +1,13 @@
+## MinimalCyber Auditd Enterprise Baseline - 00 Base
+-D
+-b 8192
+-f 1
+--backlog_wait_time 60000
+
+## Audit policy changes
+-w /etc/audit/ -p wa -k mc_audit_config
+-w /etc/audit/auditd.conf -p wa -k mc_audit_config
+-w /etc/audit/rules.d/ -p wa -k mc_audit_config
+-w /sbin/auditctl -p x -k mc_audit_tools
+-w /sbin/auditd -p x -k mc_audit_tools
+-w /sbin/augenrules -p x -k mc_audit_tools

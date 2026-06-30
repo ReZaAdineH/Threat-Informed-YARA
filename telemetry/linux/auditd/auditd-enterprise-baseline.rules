@@ -1,35 +1,210 @@
-# Linux auditd enterprise baseline for common threat visibility
-# Load with: sudo auditctl -R auditd-enterprise-baseline.rules
+## MinimalCyber Linux Auditd Enterprise Baseline
+## Generated from modules. Review and tune before production deployment.
 
+
+## BEGIN 00-base.rules
+## MinimalCyber Auditd Enterprise Baseline - 00 Base
 -D
 -b 8192
 -f 1
+--backlog_wait_time 60000
 
-# Identity and privilege changes
--w /etc/passwd -p wa -k identity_change
--w /etc/shadow -p wa -k identity_change
--w /etc/group -p wa -k identity_change
--w /etc/sudoers -p wa -k sudoers_change
--w /etc/sudoers.d/ -p wa -k sudoers_change
+## Audit policy changes
+-w /etc/audit/ -p wa -k mc_audit_config
+-w /etc/audit/auditd.conf -p wa -k mc_audit_config
+-w /etc/audit/rules.d/ -p wa -k mc_audit_config
+-w /sbin/auditctl -p x -k mc_audit_tools
+-w /sbin/auditd -p x -k mc_audit_tools
+-w /sbin/augenrules -p x -k mc_audit_tools
 
-# SSH and persistence
--w /etc/ssh/sshd_config -p wa -k ssh_config_change
--w /root/.ssh/ -p wa -k root_ssh_change
--w /etc/cron.d/ -p wa -k cron_persistence
--w /etc/crontab -p wa -k cron_persistence
--w /var/spool/cron/ -p wa -k cron_persistence
+## END 00-base.rules
 
-# Module and kernel visibility
--a always,exit -F arch=b64 -S init_module,finit_module,delete_module -k kernel_module_change
--a always,exit -F arch=b64 -S ptrace -k process_injection_or_debugging
+## BEGIN 10-identity-access.rules
+## Identity and access control
+-w /etc/passwd -p wa -k mc_identity
+-w /etc/shadow -p wa -k mc_identity
+-w /etc/group -p wa -k mc_identity
+-w /etc/gshadow -p wa -k mc_identity
+-w /etc/security/opasswd -p wa -k mc_identity
+-w /etc/login.defs -p wa -k mc_identity
+-w /etc/pam.d/ -p wa -k mc_identity_pam
+-w /etc/sudoers -p wa -k mc_sudoers
+-w /etc/sudoers.d/ -p wa -k mc_sudoers
 
-# Suspicious execution from temporary paths
--a always,exit -F arch=b64 -S execve -F dir=/tmp -k suspicious_tmp_execution
--a always,exit -F arch=b64 -S execve -F dir=/var/tmp -k suspicious_tmp_execution
--a always,exit -F arch=b64 -S execve -F dir=/dev/shm -k suspicious_shm_execution
+-a always,exit -F arch=b64 -S setuid,setgid,setreuid,setregid,setresuid,setresgid -k mc_identity_change
+-a always,exit -F arch=b32 -S setuid,setgid,setreuid,setregid,setresuid,setresgid -k mc_identity_change
+-w /usr/bin/passwd -p x -k mc_identity_tools
+-w /usr/sbin/useradd -p x -k mc_identity_tools
+-w /usr/sbin/userdel -p x -k mc_identity_tools
+-w /usr/sbin/usermod -p x -k mc_identity_tools
+-w /usr/sbin/groupadd -p x -k mc_identity_tools
+-w /usr/sbin/groupdel -p x -k mc_identity_tools
+-w /usr/sbin/groupmod -p x -k mc_identity_tools
 
-# Network tooling execution
--a always,exit -F arch=b64 -S execve -F exe=/usr/bin/nc -k network_tool_execution
--a always,exit -F arch=b64 -S execve -F exe=/usr/bin/ncat -k network_tool_execution
--a always,exit -F arch=b64 -S execve -F exe=/usr/bin/curl -k download_tool_execution
--a always,exit -F arch=b64 -S execve -F exe=/usr/bin/wget -k download_tool_execution
+## END 10-identity-access.rules
+
+## BEGIN 20-execution.rules
+## Process execution visibility for high-risk interpreters and admin tools
+-a always,exit -F arch=b64 -S execve,execveat -F euid=0 -k mc_root_execution
+-a always,exit -F arch=b32 -S execve,execveat -F euid=0 -k mc_root_execution
+
+-w /bin/bash -p x -k mc_shell_execution
+-w /bin/sh -p x -k mc_shell_execution
+-w /usr/bin/zsh -p x -k mc_shell_execution
+-w /usr/bin/python -p x -k mc_interpreter_execution
+-w /usr/bin/python3 -p x -k mc_interpreter_execution
+-w /usr/bin/perl -p x -k mc_interpreter_execution
+-w /usr/bin/ruby -p x -k mc_interpreter_execution
+-w /usr/bin/php -p x -k mc_interpreter_execution
+-w /usr/bin/lua -p x -k mc_interpreter_execution
+-w /usr/bin/node -p x -k mc_interpreter_execution
+
+-w /usr/bin/curl -p x -k mc_download_tools
+-w /usr/bin/wget -p x -k mc_download_tools
+-w /usr/bin/fetch -p x -k mc_download_tools
+-w /usr/bin/scp -p x -k mc_remote_copy
+-w /usr/bin/rsync -p x -k mc_remote_copy
+
+## END 20-execution.rules
+
+## BEGIN 30-persistence.rules
+## Persistence: cron, systemd, startup profiles, SSH keys
+-w /etc/crontab -p wa -k mc_persistence_cron
+-w /etc/cron.d/ -p wa -k mc_persistence_cron
+-w /etc/cron.daily/ -p wa -k mc_persistence_cron
+-w /etc/cron.hourly/ -p wa -k mc_persistence_cron
+-w /etc/cron.monthly/ -p wa -k mc_persistence_cron
+-w /etc/cron.weekly/ -p wa -k mc_persistence_cron
+-w /var/spool/cron/ -p wa -k mc_persistence_cron
+-w /var/spool/cron/crontabs/ -p wa -k mc_persistence_cron
+
+-w /etc/systemd/system/ -p wa -k mc_persistence_systemd
+-w /usr/lib/systemd/system/ -p wa -k mc_persistence_systemd
+-w /lib/systemd/system/ -p wa -k mc_persistence_systemd
+-w /etc/init.d/ -p wa -k mc_persistence_init
+
+-w /etc/rc.local -p wa -k mc_persistence_startup
+-w /etc/profile -p wa -k mc_persistence_shell_profile
+-w /etc/profile.d/ -p wa -k mc_persistence_shell_profile
+-w /etc/bash.bashrc -p wa -k mc_persistence_shell_profile
+-w /root/.bashrc -p wa -k mc_persistence_shell_profile
+-w /root/.profile -p wa -k mc_persistence_shell_profile
+
+-w /root/.ssh/ -p wa -k mc_persistence_ssh
+-w /etc/ssh/sshd_config -p wa -k mc_ssh_config
+-w /etc/ssh/ssh_config -p wa -k mc_ssh_config
+
+## END 30-persistence.rules
+
+## BEGIN 40-privilege-escalation.rules
+## Privilege escalation and sensitive permission changes
+-w /usr/bin/sudo -p x -k mc_privilege_escalation
+-w /bin/su -p x -k mc_privilege_escalation
+-w /usr/bin/su -p x -k mc_privilege_escalation
+-w /usr/bin/pkexec -p x -k mc_privilege_escalation
+
+-a always,exit -F arch=b64 -S chmod,fchmod,fchmodat -F auid>=1000 -F auid!=4294967295 -k mc_permission_change
+-a always,exit -F arch=b32 -S chmod,fchmod,fchmodat -F auid>=1000 -F auid!=4294967295 -k mc_permission_change
+-a always,exit -F arch=b64 -S chown,fchown,fchownat,lchown -F auid>=1000 -F auid!=4294967295 -k mc_owner_change
+-a always,exit -F arch=b32 -S chown,fchown,fchownat,lchown -F auid>=1000 -F auid!=4294967295 -k mc_owner_change
+
+-a always,exit -F arch=b64 -S setxattr,lsetxattr,fsetxattr,removexattr,lremovexattr,fremovexattr -k mc_extended_attribute_change
+-a always,exit -F arch=b32 -S setxattr,lsetxattr,fsetxattr,removexattr,lremovexattr,fremovexattr -k mc_extended_attribute_change
+
+## END 40-privilege-escalation.rules
+
+## BEGIN 50-credential-access.rules
+## Credential access
+-w /etc/shadow -p r -k mc_credential_access
+-w /etc/gshadow -p r -k mc_credential_access
+-w /etc/security/opasswd -p r -k mc_credential_access
+-w /root/.ssh/ -p r -k mc_credential_access_ssh
+-w /etc/krb5.conf -p r -k mc_credential_access_kerberos
+-w /etc/krb5.keytab -p r -k mc_credential_access_kerberos
+-w /var/lib/sss/ -p r -k mc_credential_access_sssd
+-w /etc/sssd/ -p r -k mc_credential_access_sssd
+
+-w /usr/bin/gcore -p x -k mc_process_dump
+-w /usr/bin/gdb -p x -k mc_debugger
+-w /usr/bin/strace -p x -k mc_debugger
+-w /usr/bin/ltrace -p x -k mc_debugger
+
+## END 50-credential-access.rules
+
+## BEGIN 60-defense-evasion.rules
+## Defense evasion, tampering, kernel module loading, ptrace
+-w /var/log/audit/ -p wa -k mc_audit_log_tamper
+-w /var/log/auth.log -p wa -k mc_auth_log_tamper
+-w /var/log/secure -p wa -k mc_auth_log_tamper
+-w /var/log/syslog -p wa -k mc_system_log_tamper
+-w /var/log/messages -p wa -k mc_system_log_tamper
+-w /etc/ld.so.preload -p wa -k mc_ld_preload
+-w /etc/ld.so.conf -p wa -k mc_ld_config
+-w /etc/ld.so.conf.d/ -p wa -k mc_ld_config
+
+-w /sbin/insmod -p x -k mc_kernel_module
+-w /sbin/rmmod -p x -k mc_kernel_module
+-w /sbin/modprobe -p x -k mc_kernel_module
+-w /usr/sbin/insmod -p x -k mc_kernel_module
+-w /usr/sbin/rmmod -p x -k mc_kernel_module
+-w /usr/sbin/modprobe -p x -k mc_kernel_module
+-a always,exit -F arch=b64 -S init_module,finit_module,delete_module -k mc_kernel_module
+-a always,exit -F arch=b32 -S init_module,delete_module -k mc_kernel_module
+
+-a always,exit -F arch=b64 -S ptrace -k mc_ptrace
+-a always,exit -F arch=b32 -S ptrace -k mc_ptrace
+-a always,exit -F arch=b64 -S clock_settime,settimeofday,adjtimex -k mc_time_tamper
+-a always,exit -F arch=b32 -S clock_settime,settimeofday,adjtimex -k mc_time_tamper
+
+## END 60-defense-evasion.rules
+
+## BEGIN 70-discovery.rules
+## Discovery and reconnaissance command execution
+-w /usr/bin/whoami -p x -k mc_discovery
+-w /usr/bin/id -p x -k mc_discovery
+-w /usr/bin/uname -p x -k mc_discovery
+-w /usr/bin/hostnamectl -p x -k mc_discovery
+-w /usr/bin/ip -p x -k mc_network_discovery
+-w /usr/sbin/ifconfig -p x -k mc_network_discovery
+-w /usr/bin/netstat -p x -k mc_network_discovery
+-w /usr/bin/ss -p x -k mc_network_discovery
+-w /usr/bin/lsof -p x -k mc_discovery
+-w /usr/bin/ps -p x -k mc_process_discovery
+-w /usr/bin/find -p x -k mc_file_discovery
+-w /usr/bin/grep -p x -k mc_file_discovery
+
+## END 70-discovery.rules
+
+## BEGIN 80-lateral-movement.rules
+## Lateral movement and remote access tooling
+-w /usr/bin/ssh -p x -k mc_lateral_movement
+-w /usr/bin/scp -p x -k mc_lateral_movement
+-w /usr/bin/sftp -p x -k mc_lateral_movement
+-w /usr/bin/rsync -p x -k mc_lateral_movement
+-w /usr/bin/nc -p x -k mc_lateral_movement
+-w /bin/nc -p x -k mc_lateral_movement
+-w /usr/bin/ncat -p x -k mc_lateral_movement
+-w /usr/bin/socat -p x -k mc_lateral_movement
+-w /usr/bin/telnet -p x -k mc_lateral_movement
+-w /usr/bin/rdesktop -p x -k mc_lateral_movement
+-w /usr/bin/xfreerdp -p x -k mc_lateral_movement
+
+## END 80-lateral-movement.rules
+
+## BEGIN 90-cloud-linux.rules
+## Cloud, containers, and orchestration telemetry
+-w /usr/bin/docker -p x -k mc_container_activity
+-w /usr/bin/containerd -p x -k mc_container_activity
+-w /usr/bin/crictl -p x -k mc_container_activity
+-w /usr/local/bin/kubectl -p x -k mc_kubernetes_activity
+-w /usr/bin/kubectl -p x -k mc_kubernetes_activity
+-w /etc/kubernetes/ -p wa -k mc_kubernetes_config
+-w /var/lib/kubelet/ -p wa -k mc_kubernetes_config
+-w /var/run/docker.sock -p wa -k mc_docker_socket
+
+-w /root/.aws/ -p wa -k mc_cloud_credentials
+-w /home/ -p wa -k mc_home_changes
+-w /etc/cloud/ -p wa -k mc_cloud_init
+-w /var/lib/cloud/ -p wa -k mc_cloud_init
+
+## END 90-cloud-linux.rules

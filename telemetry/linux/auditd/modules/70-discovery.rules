@@ -1,0 +1,13 @@
+## Discovery and reconnaissance command execution
+-w /usr/bin/whoami -p x -k mc_discovery
+-w /usr/bin/id -p x -k mc_discovery
+-w /usr/bin/uname -p x -k mc_discovery
+-w /usr/bin/hostnamectl -p x -k mc_discovery
+-w /usr/bin/ip -p x -k mc_network_discovery
+-w /usr/sbin/ifconfig -p x -k mc_network_discovery
+-w /usr/bin/netstat -p x -k mc_network_discovery
+-w /usr/bin/ss -p x -k mc_network_discovery
+-w /usr/bin/lsof -p x -k mc_discovery
+-w /usr/bin/ps -p x -k mc_process_discovery
+-w /usr/bin/find -p x -k mc_file_discovery
+-w /usr/bin/grep -p x -k mc_file_discovery

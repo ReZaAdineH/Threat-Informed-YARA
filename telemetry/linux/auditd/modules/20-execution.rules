@@ -1,0 +1,20 @@
+## Process execution visibility for high-risk interpreters and admin tools
+-a always,exit -F arch=b64 -S execve,execveat -F euid=0 -k mc_root_execution
+-a always,exit -F arch=b32 -S execve,execveat -F euid=0 -k mc_root_execution
+
+-w /bin/bash -p x -k mc_shell_execution
+-w /bin/sh -p x -k mc_shell_execution
+-w /usr/bin/zsh -p x -k mc_shell_execution
+-w /usr/bin/python -p x -k mc_interpreter_execution
+-w /usr/bin/python3 -p x -k mc_interpreter_execution
+-w /usr/bin/perl -p x -k mc_interpreter_execution
+-w /usr/bin/ruby -p x -k mc_interpreter_execution
+-w /usr/bin/php -p x -k mc_interpreter_execution
+-w /usr/bin/lua -p x -k mc_interpreter_execution
+-w /usr/bin/node -p x -k mc_interpreter_execution
+
+-w /usr/bin/curl -p x -k mc_download_tools
+-w /usr/bin/wget -p x -k mc_download_tools
+-w /usr/bin/fetch -p x -k mc_download_tools
+-w /usr/bin/scp -p x -k mc_remote_copy
+-w /usr/bin/rsync -p x -k mc_remote_copy
