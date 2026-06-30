@@ -1,0 +1,12 @@
+# Title: Suspicious rundll32 LOLBin Execution
+# ID: SPL-WIN-EVASION-0001
+# Status: experimental
+# Severity: high
+# ATT&CK: T1218.011 - Rundll32
+# Log source: Sysmon EventCode=1
+# Description: Detects suspicious rundll32 execution patterns often used for proxy execution.
+
+index=sysmon EventCode=1 Image="*\\rundll32.exe"
+(CommandLine="*javascript:*" OR CommandLine="*http*" OR CommandLine="*url.dll,FileProtocolHandler*" OR CommandLine="*scrobj.dll*" OR CommandLine="*shell32.dll,ShellExec_RunDLL*")
+| eval tactic="Defense Evasion", technique="T1218.011", severity="high"
+| table _time host user ParentImage Image CommandLine tactic technique severity

@@ -1,0 +1,12 @@
+// Title: AWS IAM Access Key Created by Non-Admin Principal
+// ID: KQL-AWS-IAM-0001
+// Severity: High
+// ATT&CK: T1098 - Account Manipulation
+// Required table: AWSCloudTrail
+
+AWSCloudTrail
+| where EventName == "CreateAccessKey"
+| extend Actor=tostring(UserIdentityArn), Target=tostring(RequestParameters.userName), SourceIP=tostring(SourceIpAddress)
+| where Actor !has "Admin" and Actor !has "Terraform" and Actor !has "Automation"
+| project TimeGenerated, Actor, Target, SourceIP, AWSRegion, UserAgent, ErrorCode
+| extend Tactic="Persistence", Technique="T1098", Severity="High"

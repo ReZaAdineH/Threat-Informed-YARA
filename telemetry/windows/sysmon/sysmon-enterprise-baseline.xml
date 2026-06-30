@@ -1,0 +1,36 @@
+<Sysmon schemaversion="4.90">
+  <HashAlgorithms>SHA256,IMPHASH</HashAlgorithms>
+  <EventFiltering>
+    <ProcessCreate onmatch="include">
+      <Image condition="contains">\powershell.exe</Image>
+      <Image condition="contains">\pwsh.exe</Image>
+      <Image condition="contains">\cmd.exe</Image>
+      <Image condition="contains">\rundll32.exe</Image>
+      <Image condition="contains">\regsvr32.exe</Image>
+      <Image condition="contains">\mshta.exe</Image>
+      <Image condition="contains">\wscript.exe</Image>
+      <Image condition="contains">\cscript.exe</Image>
+      <Image condition="contains">\schtasks.exe</Image>
+      <Image condition="contains">\certutil.exe</Image>
+    </ProcessCreate>
+    <NetworkConnect onmatch="include">
+      <Image condition="contains">\powershell.exe</Image>
+      <Image condition="contains">\rundll32.exe</Image>
+      <Image condition="contains">\regsvr32.exe</Image>
+      <Image condition="contains">\mshta.exe</Image>
+    </NetworkConnect>
+    <ProcessAccess onmatch="include">
+      <TargetImage condition="contains">\lsass.exe</TargetImage>
+    </ProcessAccess>
+    <FileCreate onmatch="include">
+      <TargetFilename condition="contains">\AppData\</TargetFilename>
+      <TargetFilename condition="contains">\Temp\</TargetFilename>
+      <TargetFilename condition="contains">\Startup\</TargetFilename>
+    </FileCreate>
+    <RegistryEvent onmatch="include">
+      <TargetObject condition="contains">\CurrentVersion\Run</TargetObject>
+      <TargetObject condition="contains">\CurrentVersion\RunOnce</TargetObject>
+      <TargetObject condition="contains">\Services\</TargetObject>
+    </RegistryEvent>
+  </EventFiltering>
+</Sysmon>

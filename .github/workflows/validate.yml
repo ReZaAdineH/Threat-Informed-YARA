@@ -1,0 +1,20 @@
+name: Validate Detection Content
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check file structure
+        run: |
+          test -d detections/splunk
+          test -d detections/sentinel
+          test -d detections/yara
+          test -d telemetry/windows/sysmon
+          test -d telemetry/linux/auditd
+      - name: Build rule index
+        run: python3 automation/python/mitre_rule_index_builder.py

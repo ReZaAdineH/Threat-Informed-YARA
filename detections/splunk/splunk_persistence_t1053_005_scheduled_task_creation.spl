@@ -1,0 +1,11 @@
+# Title: Suspicious Scheduled Task Creation
+# ID: SPL-WIN-PERS-0001
+# Status: experimental
+# Severity: medium
+# ATT&CK: T1053.005 - Scheduled Task
+# Log source: Sysmon EventCode=1, Windows Security 4698
+# Description: Detects scheduled task creation through schtasks.exe or Windows event 4698.
+
+(index=win OR index=sysmon) ((EventCode=1 Image="*\\schtasks.exe" CommandLine="*/create*") OR EventCode=4698)
+| eval tactic="Persistence", technique="T1053.005", severity="medium"
+| table _time host user Image CommandLine TaskName TaskContent tactic technique severity

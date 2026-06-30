@@ -1,0 +1,13 @@
+# Title: Suspicious PowerShell Encoded Command Execution
+# ID: SPL-WIN-EXEC-0001
+# Status: experimental
+# Severity: high
+# ATT&CK: T1059.001 - PowerShell
+# Log source: Sysmon EventCode=1 or Windows Security 4688
+# Description: Detects PowerShell execution using encoded or obfuscated command-line arguments.
+
+(index=win OR index=sysmon) (EventCode=1 OR EventCode=4688)
+(Image="*\\powershell.exe" OR Image="*\\pwsh.exe" OR New_Process_Name="*\\powershell.exe" OR New_Process_Name="*\\pwsh.exe")
+(CommandLine="*-enc*" OR CommandLine="*-encodedcommand*" OR CommandLine="*-e *" OR Process_Command_Line="*-enc*" OR Process_Command_Line="*-encodedcommand*")
+| eval tactic="Execution", technique="T1059.001", severity="high"
+| table _time host user parent_process_name Image CommandLine tactic technique severity

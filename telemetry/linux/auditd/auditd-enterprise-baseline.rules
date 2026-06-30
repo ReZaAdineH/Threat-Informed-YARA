@@ -1,0 +1,35 @@
+# Linux auditd enterprise baseline for common threat visibility
+# Load with: sudo auditctl -R auditd-enterprise-baseline.rules
+
+-D
+-b 8192
+-f 1
+
+# Identity and privilege changes
+-w /etc/passwd -p wa -k identity_change
+-w /etc/shadow -p wa -k identity_change
+-w /etc/group -p wa -k identity_change
+-w /etc/sudoers -p wa -k sudoers_change
+-w /etc/sudoers.d/ -p wa -k sudoers_change
+
+# SSH and persistence
+-w /etc/ssh/sshd_config -p wa -k ssh_config_change
+-w /root/.ssh/ -p wa -k root_ssh_change
+-w /etc/cron.d/ -p wa -k cron_persistence
+-w /etc/crontab -p wa -k cron_persistence
+-w /var/spool/cron/ -p wa -k cron_persistence
+
+# Module and kernel visibility
+-a always,exit -F arch=b64 -S init_module,finit_module,delete_module -k kernel_module_change
+-a always,exit -F arch=b64 -S ptrace -k process_injection_or_debugging
+
+# Suspicious execution from temporary paths
+-a always,exit -F arch=b64 -S execve -F dir=/tmp -k suspicious_tmp_execution
+-a always,exit -F arch=b64 -S execve -F dir=/var/tmp -k suspicious_tmp_execution
+-a always,exit -F arch=b64 -S execve -F dir=/dev/shm -k suspicious_shm_execution
+
+# Network tooling execution
+-a always,exit -F arch=b64 -S execve -F exe=/usr/bin/nc -k network_tool_execution
+-a always,exit -F arch=b64 -S execve -F exe=/usr/bin/ncat -k network_tool_execution
+-a always,exit -F arch=b64 -S execve -F exe=/usr/bin/curl -k download_tool_execution
+-a always,exit -F arch=b64 -S execve -F exe=/usr/bin/wget -k download_tool_execution

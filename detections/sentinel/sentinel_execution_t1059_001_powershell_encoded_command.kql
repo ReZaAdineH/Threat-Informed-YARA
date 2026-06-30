@@ -1,0 +1,11 @@
+// Title: Suspicious PowerShell Encoded Command Execution
+// ID: KQL-WIN-EXEC-0001
+// Severity: High
+// ATT&CK: T1059.001 - PowerShell
+// Required tables: DeviceProcessEvents or SecurityEvent
+
+DeviceProcessEvents
+| where FileName in~ ("powershell.exe", "pwsh.exe")
+| where ProcessCommandLine has_any ("-enc", "-encodedcommand", "-e ")
+| project Timestamp, DeviceName, InitiatingProcessAccountName, InitiatingProcessFileName, FileName, ProcessCommandLine
+| extend Tactic="Execution", Technique="T1059.001", Severity="High"

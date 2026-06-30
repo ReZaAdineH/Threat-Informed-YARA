@@ -1,0 +1,19 @@
+// Title: Azure AD Sign-in From Unusual Country
+// ID: KQL-AAD-IA-0001
+// Severity: Medium
+// ATT&CK: Valid Accounts / Cloud Identity Abuse
+// Required table: SigninLogs
+
+let lookback = 14d;
+let recent = 1d;
+let HistoricalCountries = SigninLogs
+| where TimeGenerated between (ago(lookback) .. ago(recent))
+| summarize KnownCountries=make_set(LocationDetails.countryOrRegion) by UserPrincipalName;
+SigninLogs
+| where TimeGenerated > ago(recent)
+| where ResultType == 0
+| join kind=leftouter HistoricalCountries on UserPrincipalName
+| where isnotempty(LocationDetails.countryOrRegion)
+| where array_index_of(KnownCountries, tostring(LocationDetails.countryOrRegion)) == -1
+| project TimeGenerated, UserPrincipalName, IPAddress, AppDisplayName, Location=tostring(LocationDetails.countryOrRegion), KnownCountries
+| extend Tactic="Initial Access", Technique="Valid Accounts", Severity="Medium"

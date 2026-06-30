@@ -1,44 +1,68 @@
-# Threat-Informed YARA
+# Threat-Informed Detection Engineering
 
-Threat-informed YARA rules for hybrid enterprise detection engineering across Windows, Linux, cloud, web, and office attack surfaces.
+A practical, threat-informed detection repository for enterprise security operations.
 
-## Purpose
+This project organizes telemetry engineering, detection content, YARA rules, cloud detections, and automation scripts in one structure.
 
-This repository provides practical, high-level YARA rules for SOC teams, detection engineers, malware analysts, incident responders, and security operations architects.
+## Repository Scope
 
-The goal is not to provide perfect signatures. The goal is to provide reusable detection logic that can be tested, tuned, mapped to adversary behavior, and adapted to real enterprise environments.
+- **Telemetry creation**: Windows Sysmon and Linux auditd baseline configuration
+- **Detection rules**: Splunk SPL, Microsoft Sentinel KQL, YARA, and AWS-focused detections
+- **Automation**: Python, Bash, and PowerShell utilities for collection, validation, and deployment support
+- **Threat coverage**: common enterprise threats mapped to MITRE ATT&CK
 
-## Detection Scope
-
-- PowerShell abuse and droppers
-- Credential dumping artifacts
-- Ransomware note patterns
-- Suspicious packed Windows executables
-- Office macro droppers
-- Webshell patterns
-- Linux and cloud reconnaissance
-- AWS metadata credential access
-- Common C2 and post-exploitation artifacts
-
-## Repository Structure
+## Structure
 
 ```text
-rules/      YARA rules grouped by platform and adversary behavior
-docs/       Rule writing, tuning, and false-positive guidance
-scripts/    Rule validation and testing helpers
-mappings/   MITRE ATT&CK, platform, and data-source mappings
-tests/      Test placeholders for benign and malicious patterns
+Threat-Informed-YARA/
+├── detections/
+│   ├── splunk/
+│   ├── sentinel/
+│   ├── yara/
+│   └── aws/
+├── telemetry/
+│   ├── windows/sysmon/
+│   └── linux/auditd/
+├── automation/
+│   ├── python/
+│   ├── bash/
+│   └── powershell/
+├── docs/
+├── tests/
+└── .github/workflows/
 ```
 
-## Rule Maturity
+## Detection Naming Convention
 
-Each rule should use one of the following maturity states:
+```text
+<platform>_<tactic>_<technique>_<behavior>.<extension>
+```
 
-- experimental
-- testing
-- stable
-- deprecated
+Example:
 
-## Disclaimer
+```text
+splunk_credential_access_t1003_lsass_access.spl
+sentinel_execution_t1059_powershell_encoded_command.kql
+yara_malware_qakbot_family_basic.yar
+```
 
-These rules are intended for defensive security operations, research, malware analysis, and detection engineering. They require validation and tuning before production deployment.
+## Current Coverage
+
+| Area | Content |
+|---|---|
+| Windows telemetry | Sysmon baseline config |
+| Linux telemetry | auditd baseline rules |
+| Splunk | PowerShell abuse, LSASS access, suspicious scheduled tasks, LOLBins |
+| Sentinel | PowerShell abuse, LSASS access, Azure AD suspicious sign-in, AWS CloudTrail detections |
+| YARA | QakBot-style artifact, suspicious PowerShell dropper, generic credential theft artifact |
+| AWS | CloudTrail detection queries for IAM abuse, GuardDuty triage, S3 exposure indicators |
+| Automation | validation scripts and collectors |
+
+## Important Notes
+
+These rules are starting points. Tune them against your environment, log sources, field names, business context, and known-good administrative behavior.
+
+## Author
+
+Reza Adineh  
+SOC Architect | Detection Engineering | Security Strategy
